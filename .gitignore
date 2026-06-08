@@ -1,0 +1,26 @@
+# Visual Studio
+.vs/
+*.suo
+*.user
+
+# Build
+build/
+Debug/
+Release/
+
+# Blender backups
+blender/
+*.blend1
+*.blend2
+
+# X-Plane exports
+*.obj
+
+# X-Plane SDK
+/SDK/
+
+# Logs
+*.log
+
+# Reference material
+reference/
