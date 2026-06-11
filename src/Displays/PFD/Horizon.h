@@ -2,4 +2,10 @@
 
 struct AircraftState;
 
-void DrawHorizon(const AircraftState& aicraft, int screenWidth, int screenHeight);
+namespace PFD
+{
+	struct AttitudeRegion;
+};
+
+void DrawHorizon(const AircraftState& aicraft, const PFD::AttitudeRegion& region);
+void DrawAircraftRefSymbol(const PFD::AttitudeRegion& region);

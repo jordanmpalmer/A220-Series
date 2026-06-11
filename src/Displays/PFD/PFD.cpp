@@ -5,6 +5,7 @@
 #include "Plugin/PluginState.h"
 #include "Core/AircraftState.h"
 #include "Displays/AvionicsState.h"
+#include "Displays/Common/Geometry.h"
 #include "Displays/PFD/Horizon.h"
 #include "Utils/Strings.h"
 
@@ -29,12 +30,6 @@ static char kDeviceName[] = "A220 PFD (Pilot)";
 // DRAWING HELPERS
 // ------------------------------------------------------
 
-static void DrawLine(int x, int& y, const std::string& text, float* color)
-{
-    XPLMDrawString(color, x, y, text.c_str(), nullptr, xplmFont_Basic);
-    y -= kLineHeight;
-}
-
 static void DrawBackground(float r, float g, float b)
 {
     XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0);
@@ -50,17 +45,6 @@ static void DrawBackground(float r, float g, float b)
 // ------------------------------------------------------
 // DRAW CALLBACK
 // ------------------------------------------------------
-//static float PFDBrightnessCallback(
-//    float inRheoValue,
-//    float inAmbientBrightness,
-//    float inBusVoltsRatio,
-//    void* inRefcon)
-//{
-//    // TEST: ignore power and rheostat — always output bright enough
-//    // to punch through daytime HDR exposure.
-//    const float kMaxBrightness = 5.0f;   // tune for daylight readability
-//    return kMaxBrightness;
-//}
 
 static void DrawPFDScreen(void* inRefcon)
 {
@@ -74,54 +58,16 @@ static void DrawPFDScreen(void* inRefcon)
     // Black background
     DrawBackground(0.01, 0.01f, 0.03f);
 
-    DrawHorizon(aircraft, kScreenWidth, kScreenHeight);
+    const PFD::AttitudeRegion region = PFD::MakeAttitudeRegion(PFD::kScreenWidth, PFD::kScreenHeight);
 
-    // Text on top
-    XPLMSetGraphicsState(0, 0, 0, 0, 1, 0, 0);
-
-    float white[] = { 1.0f, 1.0f, 1.0f };
-    float cyan[]  = { 0.0f, 1.0f, 1.0f };
-
-    int x = kMargin;
-    int y = kScreenHeight - kMargin - kLineHeight;
-
-    DrawLine(x, y, "A220 PFD", cyan);
-    y -= kLineHeight / 2;
-
-    DrawLine(x, y, Strings::Pad("IAS:",   Strings::Format(aircraft.flight.indicatedAirspeedKt, 1) + " kt"),  white);
-    DrawLine(x, y, Strings::Pad("ALT:",   Strings::Format(aircraft.flight.altitudeFt,          0) + " ft"),  white);
-    DrawLine(x, y, Strings::Pad("PITCH:", Strings::Format(aircraft.flight.pitchDeg,            1) + " deg"), white);
-    DrawLine(x, y, Strings::Pad("ROLL:",  Strings::Format(aircraft.flight.rollDeg,             1) + " deg"), white);
-    DrawLine(x, y, Strings::Pad("HDG:",   Strings::Format(aircraft.flight.yawDeg,              1) + " deg"), white);
+    DrawHorizon(aircraft, region);
+    
+    DrawAircraftRefSymbol(region);
 }
 
 // ------------------------------------------------------
 // REGISTRATION
 // ------------------------------------------------------
-//static float PFDBrightnessCallback(
-//    float inRheoValue,
-//    float inAmbientBrightness,
-//    float inBusVoltsRatio,
-//    void* inRefcon)
-//{
-//    // No power = dark screen
-//    if (inBusVoltsRatio <= 0.0f)
-//        return 0.0f;
-//
-//    // Photo-cell behavior: use ambient brightness for readability,
-//    // scaled by the brightness knob, gated by available bus voltage.
-//    return inAmbientBrightness * inRheoValue * inBusVoltsRatio;
-//}
-//static float PFDBrightnessCallback(
-//    float inRheoValue,
-//    float inAmbientBrightness,
-//    float inBusVoltsRatio,
-//    void* inRefcon)
-//{
-//    // Track ambient light: bright in daylight to punch through exposure,
-//    // dim at night so the screen doesn't flood the cockpit.
-//    return inAmbientBrightness;
-//}
 
 void RegisterPFD(PluginState* state)
 {
@@ -178,3 +124,11 @@ void UnregisterPFD(PluginState* state)
     XPLMDebugString("A220: PFD unregistered\n");
 }
 
+
+
+
+//static void DrawLine(int x, int& y, const std::string& text, float* color)
+//{
+//    XPLMDrawString(color, x, y, text.c_str(), nullptr, xplmFont_Basic);
+//    y -= kLineHeight;
+//}
