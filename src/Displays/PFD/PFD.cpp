@@ -63,6 +63,15 @@ static void DrawPFDScreen(void* inRefcon)
     DrawHorizon(aircraft, region);
     
     DrawAircraftRefSymbol(region);
+
+    XPLMSetGraphicsState(0, 0, 0, 0, 1, 0, 0);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
+    DrawAltitudeTape(region);
+    DrawSpeedTape(region);
+    DrawTopBar(region);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 }
 
 // ------------------------------------------------------

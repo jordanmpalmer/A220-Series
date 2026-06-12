@@ -15,15 +15,55 @@
 // ------------------------------------------------------
 
 // Sky and ground colors (Airbus-style)
-static const float kSkyR = 0.20f, kSkyG = 0.55f, kSkyB = 0.85f;
-static const float kGndR = 0.70f, kGndG = 0.40f, kGndB = 0.08f;
+constexpr float kSkyR = 0.20f, kSkyG = 0.55f, kSkyB = 0.85f;
+constexpr float kGndR = 0.70f, kGndG = 0.40f, kGndB = 0.08f;
 
-static const float kPi = 3.14159265f;
-static const float kHalfPi = 1.5707963f;
+constexpr float kPi = 3.14159265f;
+constexpr float kHalfPi = 1.5707963f;
 
 // Corner rounding radius in pixels.
-//static const float kCornerRadius = 80.0f;
+//constexpr float kCornerRadius = 80.0f;
 
+// ------------------------------------------------------
+// DRAWING HELPERS
+// ------------------------------------------------------
+
+struct Rect { float left, right, top, bottom; };
+
+static void FillRectPoints(float l, float r, float t, float b)
+{
+    glBegin(GL_QUADS);
+		glVertex2f(l, b);
+		glVertex2f(l, t);
+		glVertex2f(r, t);
+		glVertex2f(r, b);
+	glEnd();
+}
+
+static void FillRect(const Rect& r)
+{
+    glBegin(GL_QUADS);
+		glVertex2f(r.left, r.bottom);
+		glVertex2f(r.left, r.top);
+		glVertex2f(r.right, r.top);
+		glVertex2f(r.right, r.bottom);
+	glEnd();
+}
+
+static Rect Inflate(Rect r, float b)
+{
+	return { r.left - b, r.right + b, r.top + b, r.bottom - b };
+}
+
+static Rect Offset(Rect r, float dx, float dy)
+{
+    return { r.left + dx, r.right + dx, r.top + dy, r.bottom + dy };
+}
+
+static Rect MirrorX(Rect r)
+{
+    return { -r.right, -r.left, r.top, r.bottom };
+}
 
 // ------------------------------------------------------
 // HORIZON
@@ -55,21 +95,11 @@ void DrawHorizon(const AircraftState& aircraft, const PFD::AttitudeRegion& regio
 
     // Sky
     glColor4f(kSkyR, kSkyG, kSkyB, 1.0f);
-    glBegin(GL_QUADS);
-		glVertex2f(-size, 0.0f);
-		glVertex2f(size, 0.0f);
-		glVertex2f(size, size);
-		glVertex2f(-size, size);
-    glEnd();
+    FillRectPoints(-size, size, size, 0.0f);
 
     // Ground
     glColor4f(kGndR, kGndG, kGndB, 1.0f);
-    glBegin(GL_QUADS);
-		glVertex2f(-size, -size);
-		glVertex2f(size, -size);
-		glVertex2f(size, 0.0f);
-		glVertex2f(-size, 0.0f);
-    glEnd();
+    FillRectPoints(-size, size, 0.0f, -size);
 
     // Horizon line
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -78,6 +108,28 @@ void DrawHorizon(const AircraftState& aircraft, const PFD::AttitudeRegion& regio
 		glVertex2f(-size, 0.0f);
 		glVertex2f(size, 0.0f);
     glEnd();
+
+    const Rect longLine = { -0.065f * region.width, 0.065f * region.width, 0.1f * region.height, 0.103f * region.height };
+    const Rect mediumLine = { -0.03f * region.width, 0.03f * region.width, 0.1f * region.height, 0.103f * region.height };
+    const Rect shortLine = { -0.01f * region.width, 0.01f * region.width, 0.1f * region.height, 0.103f * region.height };
+
+  //  for (int i = -5; i < 5; i++)
+  //  {
+		//FillRect(Offset(shortLine, 0.0f, 0.05f * region.height + (0.2f * region.height * i)));
+		//FillRect(Offset(longLine, 0.0f, 0.1f * region.height + (0.2f * region.height * i)));
+		//FillRect(Offset(shortLine, 0.0f, 0.15f * region.height + (0.2f * region.height * i)));
+		//FillRect(Offset(mediumLine, 0.0f, 0.2f * region.height + (0.2f * region.height * i)));
+  //  }
+
+    float const offset = 0.04f;
+    for (int i = -5; i < 5; i++)
+    {
+		FillRect(Offset(shortLine, 0.0f, offset * region.height + (4.0f * offset * region.height * i)));
+		FillRect(Offset(longLine, 0.0f, 2.0f * offset * region.height + (4.0f * offset * region.height * i)));
+		FillRect(Offset(shortLine, 0.0f, 3.0f * offset * region.height + (4.0f * offset * region.height * i)));
+		FillRect(Offset(mediumLine, 0.0f, 4.0f * offset * region.height + (4.0f * offset * region.height * i)));
+    }
+
 
     glPopMatrix();
 
@@ -93,94 +145,123 @@ void DrawHorizon(const AircraftState& aircraft, const PFD::AttitudeRegion& regio
     glDisable(GL_SCISSOR_TEST);
 }
 
+// ------------------------------------------------------
+// Aircraft Symbol
+// ------------------------------------------------------
+
+// Proportions, as fractions of the attitude-region width.
+constexpr float kBoxHalf  = 0.005f;
+constexpr float kOutline  = 0.0015f;
+constexpr float kGap      = 0.040f;
+constexpr float kWingLen  = 0.110f;
+constexpr float kStubDrop = 3.0f;
+
 void DrawAircraftRefSymbol(const PFD::AttitudeRegion& region)
 {
     XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0);
 
-    float halfBoxSide = 0.005f * region.width;
-    float border = 0.0015 * region.width;
-    int offset = 0.04f * region.width;
-    int symbolWidth = 0.1f * region.width;
+    const float s    = region.width;
+    const float box  = kBoxHalf * s;
+    const float gap  = kGap     * s;
+    const float wing = kWingLen * s;
+    const float out  = kOutline * s;
+
+	const Rect centerBox = { -box,      box,        box, -box };
+	const Rect wingBar =   { gap - box, wing + box, box, -box };
+    const Rect wingStub =  { gap - box, gap + box,  box, -kStubDrop * box };
+
+    const Rect shapes[] = {
+        centerBox,
+        wingBar,  MirrorX(wingBar),
+        wingStub, MirrorX(wingStub),
+    };
+
+    const float cx = region.centerX;
+    const float cy = region.centerY;
+
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    glBegin(GL_QUADS);
-		glVertex2f(region.centerX - halfBoxSide - border, region.centerY - halfBoxSide - border);
-		glVertex2f(region.centerX - halfBoxSide - border, region.centerY + halfBoxSide + border);
-		glVertex2f(region.centerX + halfBoxSide + border, region.centerY + halfBoxSide + border);
-		glVertex2f(region.centerX + halfBoxSide + border, region.centerY - halfBoxSide - border);
-	glEnd();
-
-    glBegin(GL_QUADS);
-		glVertex2f(region.centerX - halfBoxSide + offset - border, region.centerY - halfBoxSide - border);
-		glVertex2f(region.centerX - halfBoxSide + offset - border, region.centerY + halfBoxSide + border);
-		glVertex2f(region.centerX + halfBoxSide + symbolWidth + border, region.centerY + halfBoxSide + border);
-		glVertex2f(region.centerX + halfBoxSide + symbolWidth + border, region.centerY - halfBoxSide - border);
-	glEnd();
-
-    glBegin(GL_QUADS);
-		glVertex2f(region.centerX - halfBoxSide + offset - border, region.centerY - 3 * halfBoxSide - border);
-		glVertex2f(region.centerX - halfBoxSide + offset - border, region.centerY + halfBoxSide + border);
-		glVertex2f(region.centerX + halfBoxSide + offset + border, region.centerY + halfBoxSide + border);
-		glVertex2f(region.centerX + halfBoxSide + offset + border, region.centerY - 3 * halfBoxSide - border);
-	glEnd();
-
-    glBegin(GL_QUADS);
-		glVertex2f(region.centerX + halfBoxSide - offset + border, region.centerY - halfBoxSide - border);
-		glVertex2f(region.centerX + halfBoxSide - offset + border, region.centerY + halfBoxSide + border);
-		glVertex2f(region.centerX - halfBoxSide - symbolWidth - border, region.centerY + halfBoxSide + border);
-		glVertex2f(region.centerX - halfBoxSide - symbolWidth - border, region.centerY - halfBoxSide - border);
-	glEnd();
-
-    glBegin(GL_QUADS);
-		glVertex2f(region.centerX + halfBoxSide - offset + border, region.centerY - 3 * halfBoxSide - border);
-		glVertex2f(region.centerX + halfBoxSide - offset + border, region.centerY + halfBoxSide + border);
-		glVertex2f(region.centerX - halfBoxSide - offset - border, region.centerY + halfBoxSide + border);
-		glVertex2f(region.centerX - halfBoxSide - offset - border, region.centerY - 3 * halfBoxSide - border);
-	glEnd();
-
-
+	for (const Rect& r : shapes) FillRect(Offset(Inflate(r, out), cx, cy));
 
     glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
-    glBegin(GL_QUADS);
-		glVertex2f(region.centerX - halfBoxSide, region.centerY - halfBoxSide); // bottom left
-		glVertex2f(region.centerX - halfBoxSide, region.centerY + halfBoxSide); // top left
-		glVertex2f(region.centerX + halfBoxSide, region.centerY + halfBoxSide); // top right
-		glVertex2f(region.centerX + halfBoxSide, region.centerY - halfBoxSide); // bottom right
-	glEnd();
+	for (const Rect& r : shapes) FillRect(Offset(r, cx, cy));
 
-    glBegin(GL_QUADS);
-		glVertex2f(region.centerX - halfBoxSide + offset, region.centerY - halfBoxSide);
-		glVertex2f(region.centerX - halfBoxSide + offset, region.centerY + halfBoxSide);
-		glVertex2f(region.centerX + halfBoxSide + symbolWidth, region.centerY + halfBoxSide);
-		glVertex2f(region.centerX + halfBoxSide + symbolWidth, region.centerY - halfBoxSide);
-	glEnd();
+}
 
-    glBegin(GL_QUADS);
-		glVertex2f(region.centerX - halfBoxSide + offset, region.centerY - 3 * halfBoxSide);
-		glVertex2f(region.centerX - halfBoxSide + offset, region.centerY + halfBoxSide);
-		glVertex2f(region.centerX + halfBoxSide + offset, region.centerY + halfBoxSide);
-		glVertex2f(region.centerX + halfBoxSide + offset, region.centerY - 3 * halfBoxSide);
-	glEnd();
+// ------------------------------------------------------
+// SPEED TAPE
+// ------------------------------------------------------
 
-    glBegin(GL_QUADS);
-		glVertex2f(region.centerX + halfBoxSide - offset, region.centerY - halfBoxSide);
-		glVertex2f(region.centerX + halfBoxSide - offset, region.centerY + halfBoxSide);
-		glVertex2f(region.centerX - halfBoxSide - symbolWidth, region.centerY + halfBoxSide);
-		glVertex2f(region.centerX - halfBoxSide - symbolWidth, region.centerY - halfBoxSide);
-	glEnd();
+constexpr float kAltTapeWidth   = 0.045f;
+constexpr float kAltTapeHeight  = 0.35f;
+constexpr float kAltTapeXOffset = 0.25f;
 
-    glBegin(GL_QUADS);
-		glVertex2f(region.centerX + halfBoxSide - offset, region.centerY - 3 * halfBoxSide);
-		glVertex2f(region.centerX + halfBoxSide - offset, region.centerY + halfBoxSide);
-		glVertex2f(region.centerX - halfBoxSide - offset, region.centerY + halfBoxSide);
-		glVertex2f(region.centerX - halfBoxSide - offset, region.centerY - 3 * halfBoxSide);
-	glEnd();
+void DrawAltitudeTape(const PFD::AttitudeRegion& region)
+{
+    glColor4f(0.0f, 0.0f, 0.0f, 0.3f);
+
+	const float w = region.width;
+	const float h = region.height;
+    const float wTape = w * kAltTapeWidth;
+    const float hTape = h * kAltTapeHeight;
+    const float xOffset = w * kAltTapeXOffset;
+
+    const Rect speedTape = { -wTape, wTape, hTape, -hTape };
+
+    const float cx = region.centerX;
+    const float cy = region.centerY;
+
+    FillRect(Offset(speedTape, cx + xOffset, cy));
+
+}
+
+constexpr float kSpeedTapeWidth   = 0.03f;
+constexpr float kSpeedTapeHeight  = 0.35f;
+constexpr float kSpeedTapeXOffset = 0.25f;
+
+void DrawSpeedTape(const PFD::AttitudeRegion& region)
+{
+    glColor4f(0.0f, 0.0f, 0.0f, 0.3f);
+
+	const float w = region.width;
+	const float h = region.height;
+    const float wTape = w * kSpeedTapeWidth;
+    const float hTape = h * kSpeedTapeHeight;
+    const float xOffset = w * kSpeedTapeXOffset;
+
+    const Rect speedTape = { -wTape, wTape, hTape, -hTape };
+
+    const float cx = region.centerX;
+    const float cy = region.centerY;
+
+    FillRect(Offset(speedTape, cx - xOffset, cy));
 
 }
 
 
+constexpr float kTopBarWidth   = 0.288f;
+constexpr float kTopBarHeight  = 0.055f;
+constexpr float kTopBarYOffset = 0.24f;
+constexpr float kTopBarXOffset = 0.013f;
 
+void DrawTopBar(const PFD::AttitudeRegion& region)
+{
+    glColor4f(0.0f, 0.0f, 0.0f, 0.3f);
 
+	const float w = region.width;
+	const float h = region.height;
+    const float wBar = w * kTopBarWidth;
+    const float hBar = h * kTopBarHeight;
+    const float yOffset = w * kTopBarYOffset;
+    const float xOffset = h * kTopBarXOffset;
 
+    const Rect speedTape = { -wBar, wBar, hBar, -hBar };
+
+    const float cx = region.centerX;
+    const float cy = region.centerY;
+
+    FillRect(Offset(speedTape, cx + xOffset, cy + yOffset));
+
+}
 
 // ------------------------------------------------------
 // CORNER CAPS
