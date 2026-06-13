@@ -7,7 +7,7 @@
 
 #include "Plugin/PluginState.h"
 #include "Plugin/FlightLoop.cpp"
-#include "Displays/PFD/PFD.h"
+#include "Displays/PFD/Device.h"
 #include "Sim/Interface/SimInterface.h"
 #include "Sim/Interface/DataRefs/DataRefs.h"
 #include "UI/Debug.h"

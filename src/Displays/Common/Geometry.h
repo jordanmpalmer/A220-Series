@@ -4,42 +4,24 @@
 // PFD element has to agree on. Lives in Displays/Common, beside the planned
 // Colors.h / Fonts.h. Notice: zero includes. That's the proof it's pure data.
 
-namespace PFD
+
+// ------------------------------------------------------
+// DRAWING HELPERS
+// ------------------------------------------------------
+
+struct Rect { float left, right, top, bottom; };
+
+inline constexpr Rect Inflate(Rect r, float b)
 {
-    // ---- Panel resolution (single source of truth) ----
-    inline constexpr int kScreenWidth = 2560;
-    inline constexpr int kScreenHeight = 2048;
+    return { r.left - b, r.right + b, r.top + b, r.bottom - b };
+}
 
-    // ---- Tunables ----
-    inline constexpr float kPitchPixelsPerDegree = 30.0f;  // horizon travel per deg pitch
-    inline constexpr float kHorizonSplit = 0.35f;  // fraction below attitude region (ND)
+inline constexpr Rect Offset(Rect r, float dx, float dy)
+{
+    return { r.left + dx, r.right + dx, r.top + dy, r.bottom + dy };
+}
 
-    // ---- Derived geometry ----
-    // The attitude region: the rectangle the artificial horizon lives in, plus
-    // the point the horizon and pitch ladder rotate about. Built once from the
-    // screen size so horizon, reference symbol, and ladder share one set of numbers.
-    struct AttitudeRegion
-    {
-        int   left;
-        int   bottom;
-        int   width;
-        int   height;
-        float centerX;
-        float centerY;
-    };
-
-    inline constexpr AttitudeRegion MakeAttitudeRegion(int screenWidth, int screenHeight)
-    {
-        const int bottom = static_cast<int>(screenHeight * kHorizonSplit);
-        const int height = screenHeight - bottom;
-
-        return AttitudeRegion{
-            0,                          // left
-            bottom,                     // bottom
-            screenWidth,                // width
-            height,                     // height
-            screenWidth * 0.5f,         // centerX
-            bottom + height * 0.5f      // centerY
-        };
-    }
+inline constexpr Rect MirrorX(Rect r)   // mirror about local x = 0
+{
+    return { -r.right, -r.left, r.top, r.bottom };
 }

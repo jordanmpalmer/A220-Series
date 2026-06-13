@@ -34,8 +34,10 @@ set(SOURCES_SYSTEMS
 )
 
 set(SOURCES_DISPLAYS
-    "src/Displays/PFD/PFD.cpp"
+	"src/Displays/Common/Draw.cpp"
+    "src/Displays/PFD/Device.cpp"
 	"src/Displays/PFD/Horizon.cpp"
+	"src/Displays/PFD/AirspeedTape.cpp"
 )
 
 set(SOURCES_UI
@@ -63,7 +65,7 @@ add_library(A220SeriesPlugin MODULE
     ${SOURCES_DISPLAYS}
     ${SOURCES_UI}
     ${SOURCES_DATAREFS}
-)
+ "src/Displays/PFD/Layout.h")
 
 # ------------------------------------------------------
 # PLATFORM DEFINITIONS
