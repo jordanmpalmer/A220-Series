@@ -31,13 +31,13 @@ namespace PFD
 	// HORIZON
 	// ------------------------------------------------------
 
-	void DrawHorizon(const AircraftState& aircraft, const PFD::AttitudeRegion& region)
+	void DrawHorizon(const AircraftState& aircraft, const AttitudeRegion& region)
 	{
 		const float pitch = aircraft.flight.pitchDeg;
 		const float roll = aircraft.flight.rollDeg;
 
-		const float size = std::sqrt(static_cast<float>(PFD::kScreenWidth * PFD::kScreenWidth +
-			PFD::kScreenHeight * PFD::kScreenHeight));
+		const float size = std::sqrt(static_cast<float>(kScreenWidth * kScreenWidth +
+			kScreenHeight * kScreenHeight));
 
 		//int margin = static_cast<int>(screenWidth * 0.25);
 
@@ -53,7 +53,7 @@ namespace PFD
 
 		glTranslatef(region.centerX, region.centerY, 0.0f);
 		glRotatef(roll, 0.0f, 0.0f, 1.0f);
-		glTranslatef(0.0f, -pitch * PFD::kPitchPixelsPerDegree, 0.0f);
+		glTranslatef(0.0f, -pitch * kPitchPixelsPerDegree, 0.0f);
 
 		// Sky
 		glColor4f(kSkyR, kSkyG, kSkyB, 1.0f);
@@ -114,11 +114,11 @@ namespace PFD
 	// Proportions, as fractions of the attitude-region width.
 	constexpr float kBoxHalf  = 0.005f;
 	constexpr float kOutline  = 0.0015f;
-	constexpr float kGap      = 0.040f;
-	constexpr float kWingLen  = 0.110f;
+	constexpr float kGap      = 0.035f;
+	constexpr float kWingLen  = 0.10f;
 	constexpr float kStubDrop = 3.0f;
 
-	void DrawAircraftRefSymbol(const PFD::AttitudeRegion& region)
+	void DrawAircraftRefSymbol(const AttitudeRegion& region)
 	{
 		XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0);
 

@@ -6,8 +6,8 @@
 #include "Core/AircraftState.h"
 #include "Displays/AvionicsState.h"
 #include "Displays/PFD/Horizon.h"
-#include "Displays/PFD/AirspeedTape.h"
 #include "Displays/PFD/Layout.h"
+#include "Displays/PFD/Overlay.h"
 
 #include "XPLMDisplay.h"
 #include "XPLMGraphics.h"
@@ -42,7 +42,7 @@ namespace PFD
 	// DRAW CALLBACK
 	// ------------------------------------------------------
 
-	static void DrawPFDScreen(void* inRefcon)
+	static void DrawScreen(void* inRefcon)
 	{
 		PluginState* state = static_cast<PluginState*>(inRefcon);
 		if (!state) return;
@@ -60,7 +60,8 @@ namespace PFD
 		
 		DrawAircraftRefSymbol(region);
 
-		DrawTapes(region);
+		DrawOverlay(aircraft, region);
+
 	}
 
 	// ------------------------------------------------------
@@ -80,7 +81,7 @@ namespace PFD
 		params.screenOffsetX = 0;
 		params.screenOffsetY = 0;
 		params.drawOnDemand = 0;
-		params.drawCallback = DrawPFDScreen;
+		params.drawCallback = DrawScreen;
 		params.deviceID = kDeviceID;
 		params.deviceName = kDeviceName;
 		params.refcon = state;
@@ -95,7 +96,7 @@ namespace PFD
 		params.screenScrollCallback = nullptr;
 		params.screenCursorCallback = nullptr;
 		params.keyboardCallback = nullptr;
-		//params.brightnessCallback = PFDBrightnessCallback;
+		//params.brightnessCallback = BrightnessCallback;
 		params.brightnessCallback = nullptr;
 
 		XPLMAvionicsID id = XPLMCreateAvionicsEx(&params);

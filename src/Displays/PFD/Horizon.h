@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Displays/Common/Geometry.h"
+#include "Displays/PFD/Layout.h"
 
 struct AircraftState;
 

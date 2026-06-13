@@ -31,7 +31,7 @@ PLUGIN_API int XPluginStart(char* outName, char* outSig, char* outDesc)
 
 	RegisterMenus(&gState);
 	RegisterDebugWindow(&gState);
-	RegisterPFD(&gState);
+	PFD::Register(&gState);
 	XPLMRegisterFlightLoopCallback(AircraftFlightLoopCallback, -1.0f, &gState);
 
     XPLMDebugString("A220-Series: Plugin Started\n");
@@ -43,7 +43,7 @@ PLUGIN_API void XPluginStop()
 {
 	UnregisterMenus(&gState);
 	UnregisterDebugWindow(&gState);
-	UnregisterPFD(&gState);
+	PFD::Unregister(&gState);
 	XPLMUnregisterFlightLoopCallback(AircraftFlightLoopCallback, nullptr);
 
     XPLMDebugString("A220-Series: XPluginStop called\n");

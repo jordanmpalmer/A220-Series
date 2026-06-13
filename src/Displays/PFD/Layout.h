@@ -2,15 +2,13 @@
 
 namespace PFD
 {
-    // ---- Panel resolution (single source of truth) ----
+    // ---- Panel resolution ----
     inline constexpr int kScreenWidth = 2560;
     inline constexpr int kScreenHeight = 2048;
 
-    // ---- Tunables ----
     inline constexpr float kPitchPixelsPerDegree = 30.0f;  // horizon travel per deg pitch
     inline constexpr float kHorizonSplit = 0.34f;  // fraction below attitude region (ND)
 
-    // ---- Derived geometry ----
     // The attitude region: the rectangle the artificial horizon lives in, plus
     // the point the horizon and pitch ladder rotate about. Built once from the
     // screen size so horizon, reference symbol, and ladder share one set of numbers.

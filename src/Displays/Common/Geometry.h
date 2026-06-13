@@ -1,15 +1,23 @@
 #pragma once
 
-// Pure geometry for the PFD. No X-Plane, no logic — just the numbers every
-// PFD element has to agree on. Lives in Displays/Common, beside the planned
-// Colors.h / Fonts.h. Notice: zero includes. That's the proof it's pure data.
+// Pure geometry for the PFD. No X-Plane, no logic, just the numbers every
+// PFD element has to agree on.
+// Zero includes to ensure it's pure data.
 
+#include <iostream>
+#include <cmath>     // Required for std::abs
 
 // ------------------------------------------------------
 // DRAWING HELPERS
 // ------------------------------------------------------
 
-struct Rect { float left, right, top, bottom; };
+struct Rect { 
+	float left, right, top, bottom; 
+	float midX() const   { return (left + right) * 0.5f; }
+	float midY() const   { return (top + bottom) * 0.5f; }
+	float height() const { return std::abs(top - bottom); }
+	float width() const  { return std::abs(right - left); }
+};
 
 inline constexpr Rect Inflate(Rect r, float b)
 {
