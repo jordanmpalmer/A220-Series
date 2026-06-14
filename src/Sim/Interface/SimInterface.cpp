@@ -16,6 +16,7 @@ void ReadSim(AircraftState& state) {
 	state.flight.yawDeg              = DataRefs::Flight::GetYaw();
 	state.flight.altitudeFt          = DataRefs::Flight::GetAltitude();
 	state.flight.indicatedAirspeedKt = DataRefs::Flight::GetIAS();
+    state.flight.verticalSpeedFpm    = DataRefs::Flight::GetVFpm();
 
     // Engines
     for (int i = 0; i < 2; ++i)

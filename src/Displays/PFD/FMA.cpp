@@ -11,7 +11,7 @@
 
 namespace PFD
 {
-    constexpr float kCenterColFrac = 0.175f;   // narrow centre column, as a fraction of frame width
+    constexpr float kCenterColFrac = 0.125f;   // narrow centre column, as a fraction of frame width
 
 	static void DrawModeCell(const Rect& frame, const char* mode, const float color[3])
 	{
@@ -37,14 +37,13 @@ namespace PFD
         const Rect vCol    = { x3, x4,          frame.top, frame.bottom };
         const Rect altnCol = { x4, frame.right, frame.top, frame.bottom };
 
-        float lineThickness = 0.002f * frame.width();
-        const float topGap  = 0.1f * frame.height();
+        float lineThickness = 0.003f * frame.width();
         const float botGap  = 0.05f * frame.height();
 
-        DrawLine(Point{ x1, frame.top - topGap }, Point{ x1, frame.bottom + botGap }, lineThickness, Colors::White);
-        DrawLine(Point{ x2, frame.top - topGap }, Point{ x2, frame.bottom + botGap }, lineThickness, Colors::White);
-        DrawLine(Point{ x3, frame.top - topGap }, Point{ x3, frame.bottom + botGap }, lineThickness, Colors::White);
-        DrawLine(Point{ x4, frame.top - topGap }, Point{ x4, frame.bottom + botGap }, lineThickness, Colors::White);
+        DrawLineColor(Point{ x1, frame.top }, Point{ x1, frame.bottom + botGap }, lineThickness, Colors::White);
+        DrawLineColor(Point{ x2, frame.top }, Point{ x2, frame.bottom + botGap }, lineThickness, Colors::White);
+        DrawLineColor(Point{ x3, frame.top }, Point{ x3, frame.bottom + botGap }, lineThickness, Colors::White);
+        DrawLineColor(Point{ x4, frame.top }, Point{ x4, frame.bottom + botGap }, lineThickness, Colors::White);
 
         DrawModeCell(atCol,   modes.autothrottle, Colors::Black);
         DrawModeCell(latCol,  modes.lateral,      Colors::Black);

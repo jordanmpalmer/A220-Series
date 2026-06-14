@@ -9,4 +9,5 @@ namespace DataRefs::Flight
     float GetYaw();
     float GetIAS();
     float GetAltitude();
+    float GetVFpm();
 }

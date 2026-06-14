@@ -24,19 +24,20 @@ namespace PFD
 
 		const float fmaTop    = cy + 0.5f * h;
 		const float fmaBottom = cy + 0.4f * h;
-		const float tapeTop    = cy + 0.358f * h;
-		const float tapeBottom = cy - 0.360f * h;
+		const float tapeTop    = cy + 0.316f * h;
+		const float tapeBottom = cy - 0.31f * h;
 
-		const float speedL     = cx - 0.275f * w;
-		const float speedR     = cx - 0.210f * w;
-		const float altL       = cx + 0.188f * w;
-		const float altR       = cx + 0.272f * w;
+		const float speedL     = cx - 0.283f * w;
+		const float speedR     = cx - 0.208f * w;
+		const float altL       = cx + 0.208f * w;
+		const float altR       = cx + 0.284f * w;
 
-		const float gap     = 0.009f * h;
-		const float selH    = 0.025f * h;
-		const float vsiL    = altR + gap;
-		const float vsiR    = vsiL + 0.035f * w;
-		const float vsiVGap = 0.02 * h;
+		const float gap     = 0.011f * h;
+		const float selH    = 0.045f * h;
+		const float vsiGap  = 0.015f * h;
+		const float vsiL    = altR + vsiGap;
+		const float vsiR    = vsiL + 0.034f * w;
+		const float vsiVGap = 0.022f * h;
 
 		const Rect speedSel = { speedL, speedR, tapeTop + gap + selH, tapeTop + gap };
 		const Rect altSel   = { altL,   altR,   tapeTop + gap + selH, tapeTop + gap };

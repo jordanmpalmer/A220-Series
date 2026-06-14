@@ -109,6 +109,7 @@ static void DrawFlightTab(int x, int& y, int l, int r, const AircraftState& stat
     DrawLine(x, y, Strings::Pad("Roll:", Strings::Format(state.flight.rollDeg,            1) + " deg"));
     DrawLine(x, y, Strings::Pad("Pitch:", Strings::Format(state.flight.pitchDeg,          1) + " deg"));
     DrawLine(x, y, Strings::Pad("Yaw:", Strings::Format(state.flight.yawDeg,              1) + " deg"));
+    DrawLine(x, y, Strings::Pad("VS:", Strings::Format(state.flight.verticalSpeedFpm,     1) + " fpm"));
     y -= kLineHeight / 2;
     DrawHeader(x, y, "SYSTEM");
     DrawSeparator(x, y, l, r);

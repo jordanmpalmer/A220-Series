@@ -6,8 +6,8 @@ namespace PFD
     inline constexpr int kScreenWidth = 2560;
     inline constexpr int kScreenHeight = 2048;
 
-    inline constexpr float kPitchPixelsPerDegree = 30.0f;  // horizon travel per deg pitch
-    inline constexpr float kHorizonSplit = 0.34f;  // fraction below attitude region (ND)
+    inline constexpr float kPitchPixelsPerDegree = 17.5f;  // horizon travel per deg pitch
+    inline constexpr float kHorizonSplit = 0.375f;  // fraction below attitude region (ND)
 
     // The attitude region: the rectangle the artificial horizon lives in, plus
     // the point the horizon and pitch ladder rotate about. Built once from the

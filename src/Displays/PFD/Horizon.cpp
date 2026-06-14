@@ -4,6 +4,7 @@
 
 #include "Core/AircraftState.h"
 #include "Displays/Common/Draw.h"
+#include "Displays/Common/Colors.h"
 #include "Displays/PFD/Layout.h"
 
 #include "XPLMGraphics.h"
@@ -71,38 +72,35 @@ namespace PFD
 			glVertex2f(size, 0.0f);
 		glEnd();
 
-		const Rect longLine = { -0.065f * region.width, 0.065f * region.width, 0.1f * region.height, 0.103f * region.height };
-		const Rect mediumLine = { -0.03f * region.width, 0.03f * region.width, 0.1f * region.height, 0.103f * region.height };
-		const Rect shortLine = { -0.01f * region.width, 0.01f * region.width, 0.1f * region.height, 0.103f * region.height };
+		constexpr float kStepDeg = 2.5f;
+		constexpr int   kMaxStep = 36;      // ±90°
+		constexpr float kMinorBelow = 10.0f;   // 2.5° marks: 10° below the horizon …
+		constexpr float kMinorAbove = 20.0f;   //             … to 20° above
 
-	  //  for (int i = -5; i < 5; i++)
-	  //  {
-			//FillRect(Offset(shortLine, 0.0f, 0.05f * region.height + (0.2f * region.height * i)));
-			//FillRect(Offset(longLine, 0.0f, 0.1f * region.height + (0.2f * region.height * i)));
-			//FillRect(Offset(shortLine, 0.0f, 0.15f * region.height + (0.2f * region.height * i)));
-			//FillRect(Offset(mediumLine, 0.0f, 0.2f * region.height + (0.2f * region.height * i)));
-	  //  }
+		const float thick = 0.003f * region.height;
 
-		float const offset = 0.04f;
-		for (int i = -5; i < 5; i++)
+		float bottomClamp = 0.35f * region.height;
+		float topClamp    = bottomClamp + 0.25f * region.height;
+		glScissor(0, region.centerY - bottomClamp, region.width, topClamp);
+
+		for (int i = -kMaxStep; i <= kMaxStep; ++i)
 		{
-			FillRect(Offset(shortLine, 0.0f, offset * region.height + (4.0f * offset * region.height * i)));
-			FillRect(Offset(longLine, 0.0f, 2.0f * offset * region.height + (4.0f * offset * region.height * i)));
-			FillRect(Offset(shortLine, 0.0f, 3.0f * offset * region.height + (4.0f * offset * region.height * i)));
-			FillRect(Offset(mediumLine, 0.0f, 4.0f * offset * region.height + (4.0f * offset * region.height * i)));
+			if (i == 0) continue;
+
+			const float deg = i * kStepDeg;
+			const bool  major = (i % 4 == 0);   // 10°
+			const bool  medium = (i % 2 == 0);   // 5°
+			const bool  minor = !medium;        // 2.5°
+
+			// fine marks only near the horizon; major/medium run the full range
+			if (minor && (deg < -kMinorBelow || deg > kMinorAbove)) continue;
+
+			const float halfW = (major ? 0.046f : medium ? 0.024f : 0.01f) * region.width;
+			const float y = deg * kPitchPixelsPerDegree;
+			DrawLineColor(Point{ -halfW, y }, Point{ halfW, y }, thick, Colors::White);
 		}
 
-
 		glPopMatrix();
-
-		//// Corner caps must be drawn in screen space (outside the rotated frame),
-		//// and only over the attitude region.
-		//DrawRoundedCorners(
-		//    0.0f + margin,
-		//    static_cast<float>(horizonBottom),
-		//    static_cast<float>(screenWidth) - margin,
-		//    static_cast<float>(screenHeight),
-		//    kCornerRadius);
 
 		glDisable(GL_SCISSOR_TEST);
 	}
@@ -112,11 +110,11 @@ namespace PFD
 	// ------------------------------------------------------
 
 	// Proportions, as fractions of the attitude-region width.
-	constexpr float kBoxHalf  = 0.005f;
-	constexpr float kOutline  = 0.0015f;
-	constexpr float kGap      = 0.035f;
-	constexpr float kWingLen  = 0.10f;
-	constexpr float kStubDrop = 3.0f;
+	constexpr float kBoxHalf  = 0.0025f;
+	constexpr float kOutline  = 0.001f;
+	constexpr float kGap      = 0.04625f;
+	constexpr float kWingLen  = 0.09f;
+	constexpr float kStubDrop = 6.0f;
 
 	void DrawAircraftRefSymbol(const AttitudeRegion& region)
 	{
@@ -141,55 +139,13 @@ namespace PFD
 		const float cx = region.centerX;
 		const float cy = region.centerY;
 
-		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		for (const Rect& r : shapes) FillRect(Offset(Inflate(r, out), cx, cy));
+		// Border
+		for (const Rect& r : shapes) FillRectColor(Offset(Inflate(r, out), cx, cy), Colors::White);
 
-		glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
-		for (const Rect& r : shapes) FillRect(Offset(r, cx, cy));
+		// Ref Symbol
+		for (const Rect& r : shapes) FillRectColor(Offset(r, cx, cy), Colors::Black);
 
 	}
 }
 
-
-// ------------------------------------------------------
-// CORNER CAPS
-// ------------------------------------------------------
-
-//// Fills the gap between a square corner and a rounded arc, in black.
-//// (px, py)   = the actual sharp rectangle corner being hidden
-//// (ax, ay)   = the center the arc sweeps around (inset by radius from the corner)
-//// startAngle = radians; which 90 degree quadrant this corner occupies
-//static void DrawCornerCap(float px, float py, float ax, float ay,
-//    float radius, float startAngle)
-//{
-//    const int   segments = 8;
-//    const float step = kHalfPi / segments;
-//
-//    glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
-//
-//    glBegin(GL_TRIANGLE_FAN);
-//    glVertex2f(px, py);                          // fan anchored at the sharp corner
-//    for (int i = 0; i <= segments; ++i)          // sweep the arc
-//    {
-//        float a = startAngle + step * i;
-//        glVertex2f(ax + radius * std::cos(a),
-//            ay + radius * std::sin(a));
-//    }
-//    glEnd();
-//}
-
-//// Caps all four corners of the given rectangle so it appears rounded.
-//static void DrawRoundedCorners(float left, float bottom, float right, float top, float radius)
-//{
-//    XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0);
-//
-//    // Top-left      90 -> 180
-//    DrawCornerCap(left, top, left + radius, top - radius, radius, kHalfPi);
-//    // Top-right      0 -> 90
-//    DrawCornerCap(right, top, right - radius, top - radius, radius, 0.0f);
-//    // Bottom-left  180 -> 270
-//    DrawCornerCap(left, bottom, left + radius, bottom + radius, radius, kPi);
-//    // Bottom-right 270 -> 360
-//    DrawCornerCap(right, bottom, right - radius, bottom + radius, radius, 3.0f * kHalfPi);
-//}
 
