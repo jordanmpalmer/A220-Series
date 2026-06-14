@@ -33,3 +33,5 @@ inline constexpr Rect MirrorX(Rect r)   // mirror about local x = 0
 {
     return { -r.right, -r.left, r.top, r.bottom };
 }
+
+struct Point { float x, y; };

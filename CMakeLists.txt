@@ -41,6 +41,7 @@ set(SOURCES_DISPLAYS
 	"src/Displays/PFD/Horizon.cpp"
     "src/Displays/PFD/Overlay.cpp"
 	"src/Displays/PFD/SpeedTape.cpp"
+    "src/Displays/PFD/VSI.cpp"
     "src/Displays/Common/Text.cpp" 
 )
 

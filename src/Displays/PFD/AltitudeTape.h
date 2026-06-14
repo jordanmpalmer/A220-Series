@@ -5,5 +5,5 @@
 
 namespace PFD
 {
-	void DrawAltitudeTape(const Rect& frame, const FlightState& flight);
+	void DrawAltitudeTape(const Rect& frameScale, const Rect& frameSel, const FlightState& flight);
 }

@@ -5,5 +5,5 @@
 
 namespace PFD
 {
-	void DrawSpeedTape(const Rect& frame, const FlightState& flight);
+	void DrawSpeedTape(const Rect& frameScale, const Rect& frameSel, const FlightState& flight);
 }

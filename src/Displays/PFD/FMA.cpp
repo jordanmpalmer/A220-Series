@@ -3,6 +3,7 @@
 
 #include "Core/State/GuidanceModeState.h"
 #include "Displays/PFD/Layout.h"
+#include "Displays/PFD/Theme.h"
 #include "Displays/Common/Draw.h"
 #include "Displays/Common/Colors.h"
 
@@ -10,36 +11,45 @@
 
 namespace PFD
 {
-	static void DrawModeCell(const Rect& cell, const char* mode, const float color[3])
+    constexpr float kCenterColFrac = 0.175f;   // narrow centre column, as a fraction of frame width
+
+	static void DrawModeCell(const Rect& frame, const char* mode, const float color[3])
 	{
-		FillRect(cell);                                   // the box (outline/background)
+		FillRectColor(frame, color, kOverlayFillAlpha);
 		//DrawText(cell.midX(), cell.midY(), mode, color);  // the text, centred in the cell
 	}
 
-	void DrawFMA(const Rect& frame, const GuidanceMode& modes) // will need to be swapped to GuidanceMode struct
-	{
-		XPLMSetGraphicsState(0, 0, 0, 0, 1, 0, 0);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
+    void DrawFMA(const Rect& frame, const GuidanceMode& modes)
+    {
+        const float fullW = frame.right - frame.left;
+        const float centerW = kCenterColFrac * fullW;
+        const float sideW = (fullW - centerW) / 4.0f;
 
-		glColor4f(1.0f, 0.0f, 0.0f, 0.3f);
+        const float x0 = frame.left;
+        const float x1 = x0 + sideW;
+        const float x2 = x1 + sideW;
+        const float x3 = x2 + centerW;
+        const float x4 = x3 + sideW;
 
-		const float colW         = (frame.right - frame.left) / 5.0f;
-		const float topBarBottom = frame.top - 0.68f * frame.height();
-		const float boxTops      = frame.bottom + 0.25f * frame.height();
+        const Rect atCol   = { x0, x1,          frame.top, frame.bottom };
+        const Rect latCol  = { x1, x2,          frame.top, frame.bottom };
+        const Rect apCol   = { x2, x3,          frame.top, frame.bottom };
+        const Rect vCol    = { x3, x4,          frame.top, frame.bottom };
+        const Rect altnCol = { x4, frame.right, frame.top, frame.bottom };
 
-		const Rect atCol =    { frame.left,                          frame.left + colW,                  frame.top, topBarBottom };
-		const Rect vCol =     { frame.left + colW,                   frame.left + 2 * colW,              frame.top, topBarBottom };
-		const Rect latCol =   { frame.left + 2 * colW,               frame.right,                        frame.top, topBarBottom };
-		const Rect speedBox = { frame.left,                          frame.left + 0.119f * frame.width(), boxTops,   frame.bottom};
-		const Rect altBox =   { frame.right - 0.154f * frame.width(), frame.right,                        boxTops,   frame.bottom};
+        float lineThickness = 0.002f * frame.width();
+        const float topGap  = 0.1f * frame.height();
+        const float botGap  = 0.05f * frame.height();
 
-		DrawModeCell(atCol, modes.autothrottle, Colors::kWhite);
-		DrawModeCell(vCol, modes.vertical, Colors::kGreen);
-		DrawModeCell(latCol, modes.lateral, Colors::kGreen);
-		DrawModeCell(speedBox, modes.lateral, Colors::kMagenta);
-		DrawModeCell(altBox, modes.lateral, Colors::kCyan);
+        DrawLine(Point{ x1, frame.top - topGap }, Point{ x1, frame.bottom + botGap }, lineThickness, Colors::White);
+        DrawLine(Point{ x2, frame.top - topGap }, Point{ x2, frame.bottom + botGap }, lineThickness, Colors::White);
+        DrawLine(Point{ x3, frame.top - topGap }, Point{ x3, frame.bottom + botGap }, lineThickness, Colors::White);
+        DrawLine(Point{ x4, frame.top - topGap }, Point{ x4, frame.bottom + botGap }, lineThickness, Colors::White);
 
-		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-	}
+        DrawModeCell(atCol,   modes.autothrottle, Colors::Black);
+        DrawModeCell(latCol,  modes.lateral,      Colors::Black);
+        DrawModeCell(apCol,   modes.vertical,     Colors::Black);
+        DrawModeCell(vCol,    modes.vertical,     Colors::Black);
+        DrawModeCell(altnCol, modes.vertical,     Colors::Black);
+    }
 }

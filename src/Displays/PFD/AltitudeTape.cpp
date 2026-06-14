@@ -3,41 +3,34 @@
 
 #include "Core/State/FlightState.h"
 #include "Displays/PFD/Layout.h"
+#include "Displays/PFD/Theme.h"
 #include "Displays/Common/Draw.h"
+#include "Displays/Common/Colors.h"
 
 #include "XPLMGraphics.h"
 
 namespace PFD
 {
-	static void DrawScale(const Rect& f, float alt)
+	static void DrawScale(const Rect& frame, float alt)
 	{
-		// for each visible knot value, position relative to f and the live speed:
-		//   FillRect(tickRect);                     // the tick mark   — a SHAPE
-		//   DrawText(f.left + m, tickY, label, kWhite);  // the number — TEXT
+		// for each visible knot value, position relative to frame and the live speed:
+		FillRectColor(frame, Colors::Black, kOverlayFillAlpha);
+		//   DrawText(frame.left + m, tickY, label, kWhite);  // the number — TEXT
 		return;
 	}
 
-	static void DrawReadoutBox(const Rect& f, float alt)
+	static void DrawReadoutBox(const Rect& frame, float alt)
 	{
-		//const float midY = (f.top + f.bottom) * 0.5f;
-		//FillRect(boxRect);                            // boxed background — SHAPE
+		//const float midY = (frame.top + frame.bottom) * 0.5f;
+		FillRectColor(frame, Colors::Black, kOverlayFillAlpha);
 		//char buf[8]; std::snprintf(buf, sizeof buf, "%.0f", kt);
-		//DrawText(f.right - m, midY, buf, kWhite);     // current altitude   — TEXT	}
+		//DrawText(frame.right - m, midY, buf, kWhite);     // current altitude   — TEXT	}
 		return;
 	}
 
-	void DrawAltitudeTape(const Rect& frame, const FlightState& flight)
+	void DrawAltitudeTape(const Rect& frameScale, const Rect& frameSel, const FlightState& flight)
 	{
-		XPLMSetGraphicsState(0, 0, 0, 0, 1, 0, 0);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
-
-		glColor4f(1.0f, 0.0f, 0.0f, 0.3f);
-
-		FillRect(frame);
-		DrawScale(frame, flight.altitudeFt);
-		DrawReadoutBox(frame, flight.altitudeFt);
-
-		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		DrawScale(frameScale, flight.altitudeFt);
+		DrawReadoutBox(frameSel, flight.altitudeFt);
 	}
 }
