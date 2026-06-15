@@ -8,6 +8,9 @@ build/
 Debug/
 Release/
 
+# CMake
+CMakeUserPresets.json
+
 # Blender backups
 blender/
 *.blend1

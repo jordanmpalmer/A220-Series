@@ -1,9 +1,14 @@
 cmake_minimum_required(VERSION 3.20)
 
+if(APPLE)
+    set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "universal" FORCE)
+endif()
+
 add_compile_definitions(NOMINMAX)
 
 project(A220SeriesPlugin)
 
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 
@@ -101,8 +106,11 @@ target_compile_definitions(A220SeriesPlugin PRIVATE
 # SDK PATHS
 # ------------------------------------------------------
 
-set(XPLANE12_PATH $ENV{XPLANE12_PATH})
-set(XPLANE_SDK_PATH $ENV{XPLANE_SDK})
+#set(XPLANE12_PATH $ENV{XPLANE12_PATH})
+#set(XPLANE_SDK_PATH $ENV{XPLANE_SDK})
+
+set(XPLANE12_PATH   "" CACHE PATH "Path to the X-Plane 12 installation root")
+set(XPLANE_SDK_PATH "" CACHE PATH "Path to the X-Plane SDK root")
 
 if(NOT XPLANE12_PATH)
     message(FATAL_ERROR "XPLANE12_PATH not set")
@@ -131,8 +139,9 @@ if(WIN32)
     target_link_directories(A220SeriesPlugin PRIVATE "${XPLANE_SDK_PATH}/Libraries/Win")
     target_link_libraries(A220SeriesPlugin PRIVATE XPLM_64 opengl32)
 elseif(APPLE)
-    target_link_directories(A220SeriesPlugin PRIVATE "${XPLANE_SDK_PATH}/Libraries/Mac")
-    target_link_libraries(A220SeriesPlugin PRIVATE XPLM "-framework OpenGL")
+    find_library(XPLM_FW      NAMES XPLM      PATHS "${XPLANE_SDK_PATH}/Libraries/Mac/")
+    find_library(OPENGL_FW    OpenGL)
+    target_link_libraries(A220SeriesPlugin PRIVATE ${XPLM_FW} ${XPWIDGETS_FW} ${OPENGL_FW})
 elseif(UNIX)
     # Linux doesn't link against the SDK libraries directly
     target_link_libraries(A220SeriesPlugin PRIVATE GL)
@@ -146,18 +155,27 @@ endif()
 # OUTPUT SETTINGS
 # ------------------------------------------------------
 
+if(WIN32)
+    set(PLUGIN_SUBDIR win_x64)
+elseif(APPLE)
+    set(PLUGIN_SUBDIR mac_x64)
+else()
+    set(PLUGIN_SUBDIR lin_x64)
+endif()
+
 set_target_properties(A220SeriesPlugin PROPERTIES
     OUTPUT_NAME "A220-Series"
     PREFIX ""
     SUFFIX ".xpl"
 )
 
-if(APPLE)
-    set_target_properties(A220SeriesPlugin PROPERTIES
-        BUNDLE TRUE
-        XCODE_ATTRIBUTE_WRAPPER_EXTENSION "xpl"
-    )
-elseif(UNIX)
+#if(APPLE)
+#    set_target_properties(A220SeriesPlugin PROPERTIES
+#        BUNDLE TRUE
+#        XCODE_ATTRIBUTE_WRAPPER_EXTENSION "xpl"
+#    )
+
+if(UNIX)
     target_compile_options(A220SeriesPlugin PRIVATE -fvisibility=hidden)
 endif()
 
@@ -165,13 +183,15 @@ endif()
 # AUTO-DEPLOY TO X-PLANE AIRCRAFT FOLDER
 # ------------------------------------------------------
 
-set(XP_PLUGIN_PATH
-    "${XPLANE12_PATH}/Aircraft/MyAircraft/A220-300/plugins/A220-Series/win_x64"
+set(AIRCRAFT_DIR
+    "${XPLANE12_PATH}/Aircraft/MyAircraft/A220-300"
 )
 
+set(DEPLOY_DIR "${AIRCRAFT_DIR}/plugins/A220-Series/${PLUGIN_SUBDIR}")
+
 add_custom_command(TARGET A220SeriesPlugin POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${XP_PLUGIN_PATH}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR}
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:A220SeriesPlugin>
-        ${XP_PLUGIN_PATH}
+        "${DEPLOY_DIR}/A220-Series.xpl"
 )

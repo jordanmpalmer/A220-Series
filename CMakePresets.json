@@ -1,21 +1,43 @@
 {
-  "version": 3,
-  "configurePresets": [
-    {
-      "name": "debug",
-      "displayName": "Debug",
-      "binaryDir": "${sourceDir}/build/debug",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 21,
+        "patch": 0
     },
-    {
-      "name": "release",
-      "displayName": "Release",
-      "binaryDir": "${sourceDir}/build/release",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
-    }
-  ]
+    "configurePresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+        },
+        {
+            "name": "windows-release",
+            "displayName": "Windows Release (Visual Studio 2022, x64)",
+            "description": "Inherit this in CMakeUserPresets.json and add XPLANE12_PATH / XPLANE_SDK_PATH.",
+            "inherits": "base",
+            "generator": "Visual Studio 17 2022",
+            "architecture": "x64",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "mac-release",
+            "displayName": "macOS Release (Xcode, universal)",
+            "description": "Inherit this in CMakeUserPresets.json and add XPLANE12_PATH / XPLANE_SDK_PATH.",
+            "inherits": "base",
+            "generator": "Xcode",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            }
+        }
+    ]
 }

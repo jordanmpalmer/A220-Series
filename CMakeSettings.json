@@ -1,4 +1,4 @@
-﻿{
+{
   "configurations": [
     {
       "name": "x64-Debug",
@@ -25,3 +25,31 @@
     }
   ]
 }
+
+//CMakeUserPresets
+//{
+//    "version": 3,
+//    "configurePresets": [
+//        {
+//            "name": "windows-local",
+//            "inherits": "windows",
+//            "cacheVariables": {
+//                "XPLANE12_PATH": "D:/X-Plane 12",
+//                "XPLANE_SDK_PATH": "C:/dev/XPlaneSDK"
+//            }
+//        }
+//    ],
+//    
+//    "buildPresets": [
+//        {
+//            "name": "windows-local-debug",
+//            "configurePreset": "windows-local",
+//            "configuration": "Debug"
+//        },
+//        {
+//            "name": "windows-local-release",
+//            "configurePreset": "windows-local",
+//            "configuration": "Release"
+//        }
+//    ]
+//}
