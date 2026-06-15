@@ -1,28 +1,3 @@
-{
-    "version": 3,
-    "configurePresets": [
-        {
-            "name": "mac-local",
-            "inherits": "mac",
-            "cacheVariables": {
-                "XPLANE12_PATH": "/Users/jordanpalmer/Desktop/Aviation/My Aircraft/A220/X-Plane 12",
-                "XPLANE_SDK_PATH": "/Users/jordanpalmer/Desktop/Aviation/My Aircraft/A220/SDK"
-            }
-        }
-    ],
-    "buildPresets": [
-        {
-            "name": "mac-local-debug",
-            "configurePreset": "mac-local",
-            "configuration": "Debug"
-        },
-        {
-            "name": "mac-local-release",
-            "configurePreset": "mac-local",
-            "configuration": "Release"
-        }
-    ]
-}
 // old variable
 //        "cacheVariables": {
 //            "CMAKE_BUILD_TYPE": "Release"
