@@ -175,6 +175,17 @@ set_target_properties(A220SeriesPlugin PROPERTIES
 #        XCODE_ATTRIBUTE_WRAPPER_EXTENSION "xpl"
 #    )
 
+# ------------------------------------------------------
+# CODE SIGNING (Apple Silicon requires a signature to dlopen)
+# ------------------------------------------------------
+if(APPLE)
+    add_custom_command(TARGET A220SeriesPlugin POST_BUILD
+        COMMAND codesign --force --sign - "$<TARGET_FILE:A220SeriesPlugin>"
+        COMMENT "Ad-hoc code-signing the plugin for Apple Silicon"
+        VERBATIM
+    )
+endif()
+
 if(UNIX)
     target_compile_options(A220SeriesPlugin PRIVATE -fvisibility=hidden)
 endif()
