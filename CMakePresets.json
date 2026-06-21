@@ -16,10 +16,10 @@
         },
         {
             "name": "windows-release",
-            "displayName": "Windows Release (Visual Studio 2022, x64)",
+            "displayName": "Windows Release (Visual Studio 2026, x64)",
             "description": "Inherit this in CMakeUserPresets.json and add XPLANE12_PATH / XPLANE_SDK_PATH.",
             "inherits": "base",
-            "generator": "Visual Studio 17 2022",
+            "generator": "Visual Studio 18 2026",
             "architecture": "x64",
             "condition": {
                 "type": "equals",
